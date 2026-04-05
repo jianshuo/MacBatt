@@ -18,19 +18,14 @@ platform :mac do
       xcodeproj: "MacBatt.xcodeproj"
     )
 
-    # Build the app with manual signing for CI
+    # Build the app with explicit signing identity
     build_mac_app(
       scheme: "MacBatt",
       clean: true,
       export_method: "app-store",
       destination: "generic/platform=macOS",
-      export_options: {
-        signingStyle: "manual",
-        teamID: ENV["TEAM_ID"],
-        signingCertificate: "Apple Distribution",
-        provisioningProfiles: {}
-      },
-      xcargs: "CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' DEVELOPMENT_TEAM='#{ENV["TEAM_ID"]}'"
+      codesigning_identity: "Apple Distribution: Jian Shuo Wang (97XBW2A43H)",
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM='#{ENV["TEAM_ID"]}'"
     )
 
     # Upload to App Store Connect
