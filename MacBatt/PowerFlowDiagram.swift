@@ -58,18 +58,19 @@ struct PowerFlowDiagram: View {
                     color: .orange
                 )
 
-                FlowArrow(color: .orange, phase: flowPhase)
-
-                // Adapter
-                DiagramBox(
-                    icon: "cable.connector.usbc",
-                    title: battery.adapterDescription.isEmpty ? "Adapter" : battery.adapterDescription,
-                    value: String(format: "%.0fW", adapterActual),
-                    subtitle: battery.adapterVoltage > 0 ? String(format: "%.0fV", Double(battery.adapterVoltage) / 1000.0) : nil,
-                    color: .blue
-                )
-
-                FlowArrow(color: .blue, phase: flowPhase)
+                // Adapter as a small label over the arrow
+                VStack(spacing: 2) {
+                    HStack(spacing: 2) {
+                        Image(systemName: "cable.connector.usbc")
+                            .font(.system(size: 9))
+                        Text(battery.adapterDescription.isEmpty ? "Adapter" : battery.adapterDescription)
+                            .font(.system(size: 9).bold())
+                        Text(String(format: "%.0fW", adapterActual))
+                            .font(.system(size: 9))
+                    }
+                    .foregroundStyle(.blue.opacity(0.8))
+                    FlowArrow(color: .blue, phase: flowPhase)
+                }
 
                 // MacBook — the fork point
                 DiagramBox(
