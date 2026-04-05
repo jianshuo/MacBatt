@@ -12,9 +12,16 @@ platform :mac do
       is_key_content_base64: true
     )
 
-    # Increment build number using current timestamp
+    # Get latest build number from App Store Connect and increment by 1
+    latest = latest_testflight_build_number(
+      api_key: api_key,
+      app_identifier: "com.wangjianshuo.cathier.MacBatt",
+      platform: "osx"
+    )
+    new_build = latest + 1
+
     increment_build_number(
-      build_number: Time.now.strftime("%Y%m%d%H%M"),
+      build_number: new_build,
       xcodeproj: "MacBatt.xcodeproj"
     )
 
@@ -28,13 +35,14 @@ platform :mac do
       xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM='#{ENV["TEAM_ID"]}'"
     )
 
-    # Upload to App Store Connect
+    # Upload and replace current review submission
     upload_to_app_store(
       api_key: api_key,
       skip_metadata: true,
       skip_screenshots: true,
       precheck_include_in_app_purchases: false,
-      force: true
+      force: true,
+      reject_if_possible: true
     )
   end
 end
