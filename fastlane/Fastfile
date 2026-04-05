@@ -1,7 +1,7 @@
 default_platform(:mac)
 
 platform :mac do
-  desc "Build and upload to App Store Connect"
+  desc "Build and upload to App Store Connect and TestFlight"
   lane :release do
     setup_ci if ENV["CI"]
 
@@ -35,9 +35,17 @@ platform :mac do
       xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM='#{ENV["TEAM_ID"]}'"
     )
 
-    # Upload and replace current review submission
+    # Upload to TestFlight and distribute to internal testers
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: false,
+      distribute_external: false
+    )
+
+    # Submit to App Store review, replacing current submission if any
     upload_to_app_store(
       api_key: api_key,
+      skip_binary_upload: true,
       skip_metadata: true,
       skip_screenshots: true,
       precheck_include_in_app_purchases: false,
