@@ -29,6 +29,20 @@ struct ContentView: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+                Divider()
+
+                Button {
+                    NSApplication.shared.terminate(nil)
+                } label: {
+                    HStack {
+                        Image(systemName: "power")
+                        Text("Quit MacBatt")
+                    }
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(20)
         }
@@ -310,10 +324,15 @@ struct SystemPowerSection: View {
                 InfoRow("Power In", String(format: "%.2f W (from adapter)", Double(battery.systemPowerIn) / 1000.0))
             }
             if battery.systemLoad > 0 {
-                InfoRow("System Load", String(format: "%.2f W", Double(battery.systemLoad) / 1000.0))
+                let sysConsumption = battery.isCharging
+                    ? max(0, Double(battery.systemPowerIn) - abs(Double(battery.batteryPower))) / 1000.0
+                    : Double(battery.systemLoad) / 1000.0
+                InfoRow("System Load", String(format: "%.2f W", sysConsumption))
             }
-            if battery.batteryPower > 0 {
-                InfoRow("Battery Flow", String(format: "%.2f W", Double(battery.batteryPower) / 1000.0))
+            if battery.batteryPower != 0 {
+                let batW = abs(Double(battery.batteryPower)) / 1000.0
+                let label = battery.isCharging ? "charging" : "discharging"
+                InfoRow("Battery Flow", String(format: "%.2f W (%@)", batW, label))
             }
             if battery.wallEnergyEstimate > 0 {
                 InfoRow("Wall Energy", String(format: "%.2f W (total from wall)", Double(battery.wallEnergyEstimate) / 1000.0))
@@ -340,8 +359,10 @@ struct PowerFlowSection: View {
     var body: some View {
         SectionCard(title: "Power Flow", icon: "arrow.right.arrow.left") {
             let wallW = Double(battery.systemPowerIn + battery.adapterEfficiencyLoss) / 1000.0
-            let loadW = Double(battery.systemLoad) / 1000.0
-            let batW = Double(battery.batteryPower) / 1000.0
+            let loadW = battery.isCharging
+                ? max(0, Double(battery.systemPowerIn) - abs(Double(battery.batteryPower))) / 1000.0
+                : Double(battery.systemLoad) / 1000.0
+            let batW = abs(Double(battery.batteryPower)) / 1000.0
             let lossW = Double(battery.adapterEfficiencyLoss) / 1000.0
 
             HStack(spacing: 0) {
@@ -353,7 +374,7 @@ struct PowerFlowSection: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 FlowBranch(icon: "desktopcomputer", label: "System Load", value: String(format: "%.1f W", loadW))
-                FlowBranch(icon: "battery.100", label: "Battery", value: String(format: "%.1f W %@", batW, battery.isCharging ? "(charging)" : "(maintaining)"))
+                FlowBranch(icon: "battery.100", label: "Battery", value: String(format: "%@%.1f W (%@)", battery.isCharging ? "-" : "+", batW, battery.isCharging ? "charging" : "discharging"))
                 FlowBranch(icon: "flame", label: "Losses", value: String(format: "%.1f W", lossW))
             }
             .padding(.leading, 8)

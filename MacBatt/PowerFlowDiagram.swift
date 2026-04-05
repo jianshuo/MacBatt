@@ -36,8 +36,10 @@ struct PowerFlowDiagram: View {
 
     private var pluggedInDiagram: some View {
         let wallW = Double(battery.systemPowerIn + battery.adapterEfficiencyLoss) / 1000.0
-        let sysW = Double(battery.systemLoad) / 1000.0
-        let batW = Double(battery.batteryPower) / 1000.0
+        let macW = Double(battery.systemPowerIn) / 1000.0
+        let batW = abs(Double(battery.batteryPower) / 1000.0)
+        // System consumption = MacBook input - battery charging power
+        let sysW = battery.isCharging ? max(0, macW - batW) : macW
         let lossW = Double(battery.adapterEfficiencyLoss) / 1000.0
         let adapterActual = battery.adapterActualWatts ?? Double(battery.adapterWatts)
         let efficiency: Double = {
@@ -99,7 +101,7 @@ struct PowerFlowDiagram: View {
                         title: "Battery \(battery.soc)%",
                         value: battery.isCharging
                             ? String(format: "+%.1fW", batW)
-                            : String(format: "%.1fW", batW),
+                            : String(format: "-%.1fW", batW),
                         color: .green
                     )
                 }
