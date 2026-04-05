@@ -32,17 +32,23 @@ struct ContentView: View {
 
                 Divider()
 
-                Button {
-                    NSApplication.shared.terminate(nil)
-                } label: {
-                    HStack {
-                        Image(systemName: "power")
-                        Text("Quit MacBatt")
+                HStack {
+                    Text("Made by Jianshuo Wang")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                    Spacer()
+                    Button {
+                        NSApplication.shared.terminate(nil)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "power")
+                            Text("Quit")
+                        }
                     }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .font(.caption)
                 }
-                .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .center)
             }
             .padding(20)
         }
