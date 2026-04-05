@@ -1,0 +1,3 @@
+app_identifier("com.wangjianshuo.cathier.MacBatt")
+apple_id(ENV["APPLE_ID"])
+team_id(ENV["TEAM_ID"])
