@@ -12,11 +12,15 @@ platform :mac do
       is_key_content_base64: true
     )
 
-    # Get latest build number from App Store Connect and increment by 1
+    # Get current version from project
+    version = get_version_number(xcodeproj: "MacBatt.xcodeproj", target: "MacBatt")
+
+    # Get latest build number for THIS version only, then increment
     latest = latest_testflight_build_number(
       api_key: api_key,
       app_identifier: "com.wangjianshuo.cathier.MacBatt",
-      platform: "osx"
+      platform: "osx",
+      version: version
     )
     new_build = latest + 1
 
