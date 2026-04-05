@@ -19,6 +19,7 @@ jobs:
       - name: Install certificates
         env:
           CERTIFICATE_P12: ${{ secrets.CERTIFICATE_P12 }}
+          INSTALLER_CERTIFICATE_P12: ${{ secrets.INSTALLER_CERTIFICATE_P12 }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: |
           # Create temporary keychain
@@ -29,19 +30,25 @@ jobs:
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
-          # Import certificate
+          # Import app distribution certificate
           echo "$CERTIFICATE_P12" | base64 --decode > $RUNNER_TEMP/certificate.p12
           security import $RUNNER_TEMP/certificate.p12 -k "$KEYCHAIN_PATH" \
-            -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+            -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild
+
+          # Import installer certificate
+          echo "$INSTALLER_CERTIFICATE_P12" | base64 --decode > $RUNNER_TEMP/installer.p12
+          security import $RUNNER_TEMP/installer.p12 -k "$KEYCHAIN_PATH" \
+            -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -T /usr/bin/productbuild
+
           security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
 
           # Add to keychain search list (prepend so Xcode finds it)
           security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
 
-          # Verify certificate was imported
-          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          # Verify certificates were imported
+          security find-identity -v "$KEYCHAIN_PATH"
 
-          rm $RUNNER_TEMP/certificate.p12
+          rm $RUNNER_TEMP/certificate.p12 $RUNNER_TEMP/installer.p12
 
       - name: Build and upload
         env:
