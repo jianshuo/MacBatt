@@ -25,14 +25,31 @@ platform :mac do
       xcodeproj: "MacBatt.xcodeproj"
     )
 
-    # Build the app with explicit signing identity
+    # Fetch or create provisioning profile
+    profile = get_provisioning_profile(
+      api_key: api_key,
+      app_identifier: "com.wangjianshuo.cathier.MacBatt",
+      platform: "macos",
+      adhoc: false
+    )
+    profile_path = profile[:profile_path]
+    profile_uuid = profile[:uuid]
+
+    # Build the app with provisioning profile
     build_mac_app(
       scheme: "MacBatt",
       clean: true,
       export_method: "app-store",
       destination: "generic/platform=macOS",
       codesigning_identity: "Apple Distribution: Jian Shuo Wang (97XBW2A43H)",
-      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM='#{ENV["TEAM_ID"]}'"
+      export_options: {
+        signingStyle: "manual",
+        teamID: ENV["TEAM_ID"],
+        provisioningProfiles: {
+          "com.wangjianshuo.cathier.MacBatt" => profile_uuid
+        }
+      },
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM='#{ENV["TEAM_ID"]}' PROVISIONING_PROFILE_SPECIFIER='#{profile_uuid}'"
     )
 
     # Upload to TestFlight and distribute to internal testers
